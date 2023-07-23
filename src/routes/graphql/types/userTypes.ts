@@ -1,6 +1,5 @@
 import { GraphQLFloat, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
-import { FastifyInstance } from 'fastify';
 import { PostType } from './postsTypes.js';
 import { ProfileType } from './profileTypes.js';
 
@@ -23,13 +22,41 @@ export const UserType = new GraphQLObjectType({
         profile: {
             type: ProfileType,
             resolve(parents, args, context) {
-                return context.prisma.profile.findMany({
+                return context.prisma.profile.findFirst({
                     where: {
                         userId: parents.id,
                     }
                 })
             }
         },
+        userSubscribedTo:{
+            type: new GraphQLList(UserType),
+            resolve(parents, args, context) {
+                return context.prisma.user.findMany({
+                    where: {
+                        subscribedToUser: {
+                            some: {
+                              subscriberId: parents.id,
+                            },
+                          },
+                    }
+                })
+            }
+        },
+        subscribedToUser:{
+            type: new GraphQLList(UserType),
+            resolve(parents, args, context) {
+                return context.prisma.user.findMany({
+                    where: {
+                        userSubscribedTo: {
+                            some: {
+                              authorId: parents.id,
+                            },
+                          },
+                    }
+                })
+            }
+        }
 
     })
 })

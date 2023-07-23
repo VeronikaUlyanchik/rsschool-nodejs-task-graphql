@@ -1,7 +1,6 @@
-import { GraphQLFloat, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './userTypes.js';
-import { FastifyInstance } from "fastify";
 
 export const PostType = new GraphQLObjectType({
     name: 'Post',
