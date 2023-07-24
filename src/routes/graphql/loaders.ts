@@ -1,17 +1,6 @@
 import { MemberType, Post, PrismaClient, Profile, User } from "@prisma/client";
 import DataLoader from "dataloader";
 
-const getUserById = (prisma: PrismaClient) => {
-    return new DataLoader<string, User | null>(async (ids) => {
-        const users = await prisma.user.findMany({
-            where: {
-                id: { in: ids as string[] }
-            }
-        })
-        return ids.map((id) => users.find((data) => data.id === id) ?? null);
-    })
-}
-
 const getPostByAuthorId = (prisma: PrismaClient) => {
    return new DataLoader<string, Post[]>(async (ids) => {
         const posts = await prisma.post.findMany({
@@ -83,7 +72,6 @@ const getTypeMembersByType = (prisma: PrismaClient) => {
  }
 
 export const dataLoader = (prisma: PrismaClient) => ({
-    userById: getUserById(prisma),
     postsByAuthorId: getPostByAuthorId(prisma),
     typeMembersByType: getTypeMembersByType(prisma),
     profileByUserId: getProfileByUserId(prisma),

@@ -4,14 +4,31 @@ import { ChangeUserInput, CreateUserInput, UserType } from "./userTypes.js";
 import { ChangePostInput, CreatePostInput, PostType } from "./postsTypes.js";
 import { ChangeProfileInput, CreateProfileInput, ProfileType } from "./profileTypes.js";
 import { MemberTypeIdEnum, MemberTypesType } from "./memberTypeTypes.js";
+import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from "graphql-parse-resolve-info";
 
 export const Query = new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
         users: {
             type: new GraphQLList(UserType),
-            async resolve(parents, args, context){
-                return await context.prisma.user.findMany();
+            async resolve(parents, args, context, info){
+            const resolved = parseResolveInfo(info) as any;
+            const { fields } = simplifyParsedResolveInfoFragmentWithType(
+               resolved,
+                UserType,
+            );
+                
+                const users =  await context.prisma.user.findMany({
+                    include: {
+                        userSubscribedTo: 'userSubscribedTo' in  fields,
+                        subscribedToUser: 'subscribedToUser' in  fields,
+                      },
+                });
+                users?.forEach(element => {
+                    context.dataLoader.subscribedToUserUserIds.prime(element.id);
+                    context.dataLoader.userSubscribedToByUserIds.prime(element.id);
+                });
+                return users;
             }
         },
         posts: {
