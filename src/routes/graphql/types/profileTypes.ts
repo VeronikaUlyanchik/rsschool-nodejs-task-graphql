@@ -13,11 +13,7 @@ export const ProfileType = new GraphQLObjectType({
         memberType: {
             type: MemberTypesType,
             async resolve(parents, args, context) {
-                return await context.prisma.memberType.findFirst({
-                    where: {
-                       id: parents.memberTypeId,
-                    }
-                })
+                return await context.dataLoader.typeMembersByType.load(parents.memberTypeId);
             } 
         }, 
         userId: { type: new GraphQLNonNull(UUIDType) },

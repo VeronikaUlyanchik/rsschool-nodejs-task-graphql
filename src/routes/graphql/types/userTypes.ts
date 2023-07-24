@@ -11,50 +11,26 @@ export const UserType = new GraphQLObjectType({
         balance: { type: GraphQLFloat },
         posts: {
             type: new GraphQLList(PostType),
-            resolve(parents, args, context) {
-                return context.prisma.post.findMany({
-                    where: {
-                        authorId: parents.id,
-                    }
-                })
+            async resolve(parents, args, context) {
+                return await context.dataLoader.postsByAuthorId.load(parents.id);
             }
         },
         profile: {
             type: ProfileType,
-            resolve(parents, args, context) {
-                return context.prisma.profile.findFirst({
-                    where: {
-                        userId: parents.id,
-                    }
-                })
+            async resolve(parents, args, context) {
+                return await context.dataLoader.profileByUserId.load(parents.id);
             }
         },
         userSubscribedTo:{
             type: new GraphQLList(UserType),
-            resolve(parents, args, context) {
-                return context.prisma.user.findMany({
-                    where: {
-                        subscribedToUser: {
-                            some: {
-                              subscriberId: parents.id,
-                            },
-                          },
-                    }
-                })
+            async resolve(parents, args, context) {
+                return await context.dataLoader.userSubscribedToByUserIds.load(parents.id);
             }
         },
         subscribedToUser:{
             type: new GraphQLList(UserType),
-            resolve(parents, args, context) {
-                return context.prisma.user.findMany({
-                    where: {
-                        userSubscribedTo: {
-                            some: {
-                              authorId: parents.id,
-                            },
-                          },
-                    }
-                })
+            async resolve(parents, args, context) {
+                return await context.dataLoader.subscribedToUserUserIds.load(parents.id);
             }
         }
 
